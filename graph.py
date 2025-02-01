@@ -62,23 +62,25 @@ def star_graph_s16(show: bool = False):
     return G
 
 # Grid Graph 8x4
-def grid_graph_8x4():
+def grid_graph_8x4(show: bool = False):
     G = nx.grid_graph(dim=[8, 4])
-    plt.figure(figsize=(12, 6))
-    pos = {node: node for node in G.nodes()}
-    nx.draw(G, pos, with_labels=True, node_color='lightblue', edge_color='gray', node_size=300)
-    plt.title("Grid Graph 8x4")
-    plt.show()
+    if show:
+        plt.figure(figsize=(12, 6))
+        pos = {node: node for node in G.nodes()}
+        nx.draw(G, pos, with_labels=True, node_color='lightblue', edge_color='gray', node_size=300)
+        plt.title("Grid Graph 8x4")
+        plt.show()
     return G
 
 # Grid Graph 8x4
-def grid_graph_nxm(n,m):
+def grid_graph_nxm(n,m, show: bool = False):
     G = nx.grid_graph(dim=[n, m])
-    plt.figure(figsize=(12, 6))
-    pos = {node: node for node in G.nodes()}
-    nx.draw(G, pos, with_labels=True, node_color='lightblue', edge_color='gray', node_size=300)
-    plt.title("Grid Graph {}x{}".format(n,m))
-    plt.show()
+    if show:
+        plt.figure(figsize=(12, 6))
+        pos = {node: node for node in G.nodes()}
+        nx.draw(G, pos, with_labels=True, node_color='lightblue', edge_color='gray', node_size=300)
+        plt.title("Grid Graph {}x{}".format(n,m))
+        plt.show()
     return G
 
 
