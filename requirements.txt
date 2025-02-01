@@ -5,3 +5,5 @@ qiskit-aer
 networkx
 numpy 
 pandas
+matplotlib
+pylatexenc
