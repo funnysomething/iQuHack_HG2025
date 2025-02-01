@@ -5,3 +5,7 @@ qiskit-aer
 networkx
 numpy 
 pandas
+IPython
+matplotlib
+qiskit[visualization]
+pylatexenc
