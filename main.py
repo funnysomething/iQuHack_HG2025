@@ -98,7 +98,7 @@ class MaxCutSolver:
             score, bal_score, con_score = self.final_score(graph, XS_brute, XS_balanced, XS_connected, counts, self.shots, ansatz, 'base')
             if verbose:
                 print(f"Score: {score} | Balanced Score: {bal_score} | Connected Score: {con_score} (Ansatz {[gates[g] for g in gate_perm]}, Graph {i + 1})")
-            total_score += score + bal_score + con_score                    
+            total_score += score                  
         return total_score
 
     def final_score(self, graph, XS_brut, XS_balanced, XS_connected, counts,shots,ansatz,challenge):
