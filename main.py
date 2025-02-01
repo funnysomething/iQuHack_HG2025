@@ -26,18 +26,44 @@ from hamiltonian import build_maxcut_hamiltonian
 class MaxCutSolver:
 
     backend = AerSimulator()
-    shots = 100_000
+    shots = 100_000     # Shots during simulation
     challenges = ['base', 'balanced', 'connected']
 
-    def _solve(self, gate_perm):
+    def solve(self):
+    # Loop through each type of ansatz, and try it on every graph,
+    # summing up the scores. Then output it into a csv (?)
+        max_score, max_perm = 0, None
+        for length in range(4, 6):
+            
+            for gate_perm in product(gates, repeat=length):
+                print(f"Testing gate_perm {[gates[g] for g in gate_perm]}")
+                total_score = self._solve(gate_perm)
+                print(f"Total score for {[gates[g] for g in gate_perm]}: {total_score}\n")
+                if total_score > max_score:
+                    max_score = total_score
+                    max_perm = gate_perm
+        print(f"Max Score: {max_score} | Gates: {[gates[g] for g in max_perm]}")
+        # self._solve([0, 6, 4, 5])
+        # for length in range(2, 3):
+        #     for gate_perm in product(gates, repeat=length):
+        #         # Perm is a permuatation of gates to build the ansatz
+        #         for i, graph in enumerate(graphs):
+
+    def _solve(self, gate_perm, verbose: bool = False):
+        total_score = 0
         for i, graph in enumerate(graphs):
-            print(f"Testing graph {i + 1} with gate_perm {[gates[g] for g in gate_perm]}")
+            if verbose:
+                print(f"Testing graph {i + 1} with gate_perm {[gates[g] for g in gate_perm]}")
             # Now we have a graph to test the ansatz on
             ansatz = build_with_gates(graph, gate_perm)
             ham = build_maxcut_hamiltonian(graph)
 
             qite_evolver = QITEvolver(ham, ansatz)
-            qite_evolver.evolve(num_steps=40, lr = 0.1, verbose = True)
+            try:
+                qite_evolver.evolve(num_steps=40, lr = 0.1, verbose = True)
+            except Exception as e:
+                print(f"Invalid gate permutation {[gates[g] for g in gate_perm]}")
+                return 0
 
             qite_evolver.plot_convergence() # Comment out to remove graphs
 
@@ -70,17 +96,10 @@ class MaxCutSolver:
                     sum_connected_counts += counts[bs]
 
             score, bal_score, con_score = self.final_score(graph, XS_brute, XS_balanced, XS_connected, counts, self.shots, ansatz, 'base')
-            print(f"Score: {score} | Balanced Score: {bal_score} | Connected Score: {con_score} (Ansatz {[gates[g] for g in gate_perm]}, Graph {i + 1})")
-
-    def solve(self):
-    # Loop through each type of ansatz, and try it on every graph,
-    # summing up the scores. Then output it into a csv (?)
-        self._solve([1, 4])
-        # for length in range(2, 3):
-        #     for gate_perm in product(gates, repeat=length):
-        #         # Perm is a permuatation of gates to build the ansatz
-        #         for i, graph in enumerate(graphs):
-                    
+            if verbose:
+                print(f"Score: {score} | Balanced Score: {bal_score} | Connected Score: {con_score} (Ansatz {[gates[g] for g in gate_perm]}, Graph {i + 1})")
+            total_score += score + bal_score + con_score                    
+        return total_score
 
     def final_score(self, graph, XS_brut, XS_balanced, XS_connected, counts,shots,ansatz,challenge):
         sum_counts = 0
