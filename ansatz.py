@@ -4,8 +4,8 @@ from qiskit import QuantumCircuit
 
 gates = {
     0: 'CX_UV', 1: 'CY_UV', 2: 'CZ_UV', 
-    3: 'CX_VU', 4: 'CY_VU', 5: 'CZ_VU',
-    6: 'RX_U', 7: 'RY_U', 8: 'RZ_U',
+    # 3: 'CX_VU', 4: 'CY_VU', 5: 'CZ_VU',
+    # 6: 'RX_U', 7: 'RY_U', 8: 'RZ_U',
     9: 'RX_V', 10: 'RY_V', 11: 'RZ_V'
 }
 
