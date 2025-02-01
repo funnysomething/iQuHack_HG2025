@@ -31,7 +31,7 @@ class MaxCutSolver:
 
     def _solve(self, gate_perm):
         for i, graph in enumerate(graphs):
-            print(f"Testing graph {i + 1} with gate_perm {gate_perm}")
+            print(f"Testing graph {i + 1} with gate_perm {[gates[g] for g in gate_perm]}")
             # Now we have a graph to test the ansatz on
             ansatz = build_with_gates(graph, gate_perm)
             ham = build_maxcut_hamiltonian(graph)
@@ -70,7 +70,7 @@ class MaxCutSolver:
                     sum_connected_counts += counts[bs]
 
             score, bal_score, con_score = self.final_score(graph, XS_brute, XS_balanced, XS_connected, counts, self.shots, ansatz, 'base')
-            print(f"Score: {score} | Balanced Score: {bal_score} | Connected Score: {con_score} (Test {gate_perm}, Graph {i + 1})")
+            print(f"Score: {score} | Balanced Score: {bal_score} | Connected Score: {con_score} (Ansatz {[gates[g] for g in gate_perm]}, Graph {i + 1})")
 
     def solve(self):
     # Loop through each type of ansatz, and try it on every graph,

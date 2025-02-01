@@ -2,7 +2,7 @@ from qiskit.circuit import ParameterVector
 import networkx as nx
 from qiskit import QuantumCircuit
 
-gates = [0, 1, 2, 3, 4, 5]
+gates = {0: 'CX', 1: 'CY', 2: 'CZ', 3: 'RX', 4: 'RY', 5: 'RZ'}
 
 CX = 0
 CY = 1
