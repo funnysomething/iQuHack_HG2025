@@ -5,7 +5,7 @@ from qiskit_aer import AerSimulator
 from typing import List
 
 from IPython import display
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import pandas as pd
 
 from qiskit import QuantumCircuit
@@ -87,9 +87,10 @@ class QITEvolver:
             dcurr_params = np.linalg.lstsq(Gmat, dvec, rcond=1e-2)[0]
             curr_params += lr * dcurr_params
 
+            # TODO: uncomment
             # Progress checkpoint!
-            if verbose:
-                self.print_status(measurements)
+            # if verbose:
+            #     self.print_status(measurements)
             self.energies.append(curr_energy)
             self.param_vals.append(curr_params.copy())
             self.runtime.append(quantum_exec_time)

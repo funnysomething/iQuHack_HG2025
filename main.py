@@ -29,82 +29,80 @@ class MaxCutSolver:
     shots = 100_000
     challenges = ['base', 'balanced', 'connected']
 
-    def solve(self):
-    # Loop through each type of ansatz, and try it on every graph,
-    # summing up the scores. Then output it into a csv (?)
+    def _solve(self, gate_perm):
+        for i, graph in enumerate(graphs):
+            print(f"Testing graph {i + 1} with gate_perm {gate_perm}")
+            # Now we have a graph to test the ansatz on
+            ansatz = build_with_gates(graph, gate_perm)
+            ham = build_maxcut_hamiltonian(graph)
 
-        for length in range(1, 2):
-            for gate_perm in product(gates, repeat=length):
-                # Perm is a permuatation of gates to build the ansatz
-                for graph in graphs:
-                    # Now we have a graph to test the ansatz on
-                    ansatz = build_with_gates(graph, gate_perm) # Builds ansatz with given gate permutation
-                    ham = build_maxcut_hamiltonian(graph)
+            qite_evolver = QITEvolver(ham, ansatz)
+            qite_evolver.evolve(num_steps=40, lr = 0.1, verbose = True)
 
-                    qite_evolver = QITEvolver(ham, ansatz)
-                    qite_evolver.evolve(num_steps=40, lr = 0.1, verbose = True)
+            qite_evolver.plot_convergence() # Comment out to remove graphs
 
-                    qite_evolver.plot_convergence() # Comment out to remove graphs
+            # Run on the backend after optimizing ansatz
+            optimized_state = ansatz.assign_parameters(qite_evolver.param_vals[-1])
+            optimized_state.measure_all()
+            counts = self.backend.run(optimized_state, shots = self.shots).result().get_counts()
 
-                    # Run on the backend after optimizing ansatz
-                    optimized_state = ansatz.assign_parameters(qite_evolver.param_vals[-1])
-                    optimized_state.measure_all()
-                    counts = self.backend.run(optimized_state, shots = self.shots)
+            # Find the sampled bitstring with the largest cut value
+            cut_vals = sorted(((bs, self.compute_cut_size(graph, bs)) for bs in counts), key=lambda t: t[1])
+            best_bs = cut_vals[-1][0]
 
-                    # Find the sampled bitstring with the largest cut value
-                    cut_vals = sorted(((bs, self.compute_cut_size(graph, bs)) for bs in counts), key=lambda t: t[1])
-                    best_bs = cut_vals[-1][0]
+            # most_likely_soln = ""   # TODO: CHANGE TO MOST LIKELY
 
-                    # most_likely_soln = ""   # TODO: CHANGE TO MOST LIKELY
+            XS_brute, XS_balanced, XS_connected = self.calculate_best_score(graph)
 
-                    (best_brute, best_bal, best_con), (XS_brute, XS_balanced, XS_connected) = self.calculate_best_score(self, graph)
-
-                    sum_counts = 0
-                    for bs in counts:
-                        if bs in XS_brute:
-                            sum_counts += counts[bs]
-
-                    sum_balanced_counts = 0
-                    for bs in counts:
-                        if bs in XS_balanced:
-                            sum_balanced_counts += counts[bs]
-
-                    sum_connected_counts = 0
-                    for bs in counts:
-                        if bs in XS_connected:
-                            sum_connected_counts += counts[bs]
-
-                    final_score = self.final_score(graph, XS_brute, XS_balanced, XS_connected, counts, self.shots, ansatz, 'base')
-                    print("Final Score: " + final_score + "for test ", gate_perm)
-
-    def final_score(self, graph, XS_brut, XS_balanced, XS_connected, counts,shots,ansatz,challenge):
-
-        if(challenge=='base'):
             sum_counts = 0
             for bs in counts:
-                if bs in XS_brut:
+                if bs in XS_brute:
                     sum_counts += counts[bs]
-        elif(challenge=='balanced'):
+
             sum_balanced_counts = 0
             for bs in counts:
                 if bs in XS_balanced:
                     sum_balanced_counts += counts[bs]
-            sum_counts = sum_balanced_counts
-        elif(challenge=='connected'):
+
             sum_connected_counts = 0
             for bs in counts:
                 if bs in XS_connected:
                     sum_connected_counts += counts[bs]
-            sum_counts = sum_connected_counts
 
+            score, bal_score, con_score = self.final_score(graph, XS_brute, XS_balanced, XS_connected, counts, self.shots, ansatz, 'base')
+            print(f"Score: {score} | Balanced Score: {bal_score} | Connected Score: {con_score} (Test {gate_perm}, Graph {i + 1})")
+
+    def solve(self):
+    # Loop through each type of ansatz, and try it on every graph,
+    # summing up the scores. Then output it into a csv (?)
+        self._solve([1, 4])
+        # for length in range(2, 3):
+        #     for gate_perm in product(gates, repeat=length):
+        #         # Perm is a permuatation of gates to build the ansatz
+        #         for i, graph in enumerate(graphs):
+                    
+
+    def final_score(self, graph, XS_brut, XS_balanced, XS_connected, counts,shots,ansatz,challenge):
+        sum_counts = 0
+        for bs in counts:
+            if bs in XS_brut:
+                sum_counts += counts[bs]
+        sum_balanced_counts = 0
+        for bs in counts:
+            if bs in XS_balanced:
+                sum_balanced_counts += counts[bs]
+        sum_connected_counts = 0
+        for bs in counts:
+            if bs in XS_connected:
+                sum_connected_counts += counts[bs]
 
         transpiled_ansatz = transpile(ansatz, basis_gates = ['cx','rz','sx','x'])
         cx_count = transpiled_ansatz.count_ops()['cx']
         score = (4*2*graph.number_of_edges())/(4*2*graph.number_of_edges() + cx_count) * sum_counts/shots
+        bal_score = (4*2*graph.number_of_edges())/(4*2*graph.number_of_edges() + cx_count) * sum_balanced_counts/shots
+        con_score = (4*2*graph.number_of_edges())/(4*2*graph.number_of_edges() + cx_count) * sum_connected_counts/shots
 
-        return np.round(score,5)
-
-
+        return np.round(score,5), np.round(bal_score, 5), np.round(con_score, 5)
 
     def calculate_best_score(self, graph) -> tuple[int, int, int]:
         verbose = False
@@ -168,7 +166,7 @@ class MaxCutSolver:
                 if verbose:
                     print(outstr)
 
-        return (best_cost_brute, best_cost_balanced, best_cost_connected), (XS_brut, XS_balanced, XS_connected)
+        return XS_brut, XS_balanced, XS_connected
         
     def compute_cut_size(self, graph, bitstring):
         """

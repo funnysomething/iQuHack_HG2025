@@ -227,10 +227,10 @@ def planar_connected_graph_16(show: bool = False):
 
 graphs = [
     cycle_graph_c8(),
-    complete_bipartite_graph_k88(),
+    # complete_bipartite_graph_k88(),
     complete_bipartite_graph_k_nn(5),
     regular_graph_4_8(),
     cubic_graph_3_16(),
-    random_connected_graph_16(p=0.18),
+    # random_connected_graph_16(p=0.18),
     expander_graph_n(16)
 ]
