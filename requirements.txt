@@ -1,7 +1,2 @@
 qiskit
 jupyter
-requests
-qiskit-aer 
-networkx
-numpy 
-pandas
