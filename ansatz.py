@@ -3,10 +3,13 @@ import networkx as nx
 from qiskit import QuantumCircuit
 
 gates = {
-    0: 'CX_UV', 1: 'CY_UV', 2: 'CZ_UV', 
-    # 3: 'CX_VU', 4: 'CY_VU', 5: 'CZ_VU',
-    # 6: 'RX_U', 7: 'RY_U', 8: 'RZ_U',
-    9: 'RX_V', 10: 'RY_V', 11: 'RZ_V'
+    0: 'CX_UV', 
+    # 1: 'CY_UV', 2: 'CZ_UV', 
+    # # 3: 'CX_VU', 4: 'CY_VU', 5: 'CZ_VU',
+    # # 6: 'RX_U', 7: 'RY_U', 8: 'RZ_U',
+    # 9: 'RX_V', 10: 'RY_V', 
+    11: 'RZ_V',
+    12: 'SX', 13: 'X'
 }
 
 # Deprecated TODO: CHECK IF THIS IS STILL NEEDED
@@ -61,5 +64,8 @@ def build_with_gates(graph: nx.Graph, gates: list[int]):
                 ansatz.ry(t, v)
             elif gate == 11:
                 ansatz.rz(t, v)            
-    
+            elif gate == 12:
+                ansatz.sx(v)
+            elif gate == 13:
+                ansatz.x(v)
     return ansatz
