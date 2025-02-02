@@ -1,9 +1,5 @@
-qiskit
-jupyter
-requests
-qiskit-aer 
-networkx
-numpy 
-pandas
+IPython
 matplotlib
-pylatexenc
+networkx
+numpy
+pandas
